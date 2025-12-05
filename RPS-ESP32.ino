@@ -206,7 +206,6 @@ void loop() {
       }
       // if 0 for more than 10 seconds, reprompt the player
       else if (millis() - inputStartTime >= inputTimeout) {
-      displayError();
       // shows prompt again
       promptInput();
       // restart the timer
@@ -240,17 +239,19 @@ void loop() {
         else if (roundResult == "Computer") {
           computerScore++;
         }
-        
+
+        // force early win if someone wins 2 from best out of 3
+        if (totalRounds == 3 && (playerScore >= 2 || computerScore >= 2)) {
+          currentRound = totalRounds;
+        }
+        // force early win if someone wins 3 from best out of 5
+        if (totalRounds == 5 && (playerScore >= 3 || computerScore >= 3)) {
+          currentRound = totalRounds;  // Force game to end after showing result
+        }
         // update state 
         currentState = SHOW_RESULT;
       }
 
-      // invalid choice
-      else if (millis() - inputStartTime >= inputTimeout) {
-        // timeout! error!! ahh!!!!
-        displayError();
-        currentState = COUNTDOWN;  // retry the round
-      }
     break;
 
     case SHOW_RESULT:
@@ -314,9 +315,9 @@ void displayWelcome() {
   display.println("Hello!");
   display.display();   
   display.startscrolldiagright(0x00, 0x07);
-  delay(4000);
+  delay(2000);
   display.startscrolldiagleft(0x00, 0x07);
-  delay(4000);
+  delay(2000);
   display.stopscroll();
 
   // show welcome to..
@@ -325,7 +326,7 @@ void displayWelcome() {
   display.println("Welcome");
   display.println("to...");
   display.display();
-  delay(3000); 
+  delay(2000); 
   
   // then show rock paper scissors
   display.clearDisplay();
@@ -335,7 +336,7 @@ void displayWelcome() {
   display.println("Paper,");
   display.println("Scissors!");
   display.display();
-  delay(3000);
+  delay(2000);
 }
 
 void displayRules() {
@@ -376,32 +377,6 @@ void promptInput() {
   display.display();
 }
 
-void displayError() {
-  display.clearDisplay();
-  display.setTextSize(2);
-  display.setTextColor(WHITE);
-  display.setCursor(0, 0); 
-
-  display.println("ERROR!!");
-  display.display();
-  delay(1000);
-
-  display.clearDisplay();
-  display.println("ERROR!!");
-  display.display();
-  delay(1000);
-
-  display.clearDisplay();
-  display.println("ERROR!!");
-  display.display();
-  delay(1000);
-
-  display.clearDisplay();
-  display.println("ERROR!!");
-  display.display();
-  delay(1000);
-}
-
 // displays the number of rounds and ready message
 void displayReadyMessage(int rounds) {
   if (rounds == 1) {
@@ -412,7 +387,7 @@ void displayReadyMessage(int rounds) {
     display.print(rounds);
     display.print(" round");
     display.display();
-    delay(3000);
+    delay(1500);
   }
   else {
     display.clearDisplay();
@@ -422,7 +397,7 @@ void displayReadyMessage(int rounds) {
     display.print(rounds);
     display.print(" rounds");
     display.display();
-    delay(3000);
+    delay(1500);
   }
 
   // tell player to press button1 to continue
@@ -468,14 +443,12 @@ void displayRPSCountdown() {
   display.setCursor(10, 20);
   display.println("SHOOT!");
   display.display();
-  delay(1000);
 
   // tell player to press their choice now
-  display.clearDisplay();
-  display.setTextSize(2);
-  display.setCursor(0,10);
-  display.println("Choose");
-  display.println("now!");
+  display.println();
+  display.setTextSize(1);
+  display.setCursor(10, 45);
+  display.println("Choose now!");
   display.display();
   delay(1000);
 }
@@ -556,12 +529,11 @@ void displayResult() {
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(WHITE);
-  display.setCursor(0, 10);
+  display.setCursor(0, 5);
   
   display.print("You chose: "); 
   display.println(choiceToString(playerChoice));
   
-  display.println();
   display.println("Computer chose: ");
   display.println(choiceToString(computerChoice));
   
@@ -570,20 +542,17 @@ void displayResult() {
     display.println("Tie!");
   }
   else {
-    display.setCursor(0, 25);
     display.println();
     display.print(roundResult);
     display.println(" wins!");
   }
   
-  display.setCursor(0, 40);
-  display.println();
   display.print("Score: ");
   display.print(playerScore);
   display.print("-");
   display.println(computerScore);
   display.display();
-  delay(3000);
+  delay(2000);
 
 }
 
@@ -655,7 +624,7 @@ void endingGame(int playerScore, int computerScore) {
       display.display();
     }
     else {
-      display.println("There was a...");
+      display.println("It was a..");
       display.println();
       display.println("TIE!!");
       display.display();
